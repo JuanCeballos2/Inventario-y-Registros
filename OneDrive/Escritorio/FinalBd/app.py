@@ -5,10 +5,9 @@ from datetime import datetime
 from flask_cors import CORS
 import logging
 
-
 app = Flask(__name__)
 
-# Configura el logging (esto se puede hacer al inicio del archivo)
+# Configura el logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Aplicar CORS globalmente a la aplicación
@@ -56,8 +55,8 @@ def registrar_pelicula():
     result = db.peliculas.insert_one(nueva_pelicula)
     return jsonify({"id": str(result.inserted_id), "message": "Película registrada con éxito"}), 201
 
-
-@app.route('/compras', methods=['POST'])
+# Ruta para realizar una compra
+@app.route('/transacciones', methods=['POST'])
 def comprar_entradas():
     datos = request.json
     logging.info(f"Datos recibidos: {datos}")
@@ -69,25 +68,24 @@ def comprar_entradas():
 
     # Buscar la película por nombre
     pelicula_nombre = datos["pelicula_nombre"]
-    pelicula = db.peliculas.find_one({"titulo": pelicula_nombre})  # Buscar por el nombre de la película
+    pelicula = db.peliculas.find_one({"titulo": pelicula_nombre})
 
     if not pelicula:
-        logging.info("Película no encontrada")
+        logging.info(f"Película no encontrada: {pelicula_nombre}")
         return jsonify({"error": "Película no encontrada"}), 404
 
-    # Convertir el nombre del usuario a ObjectId
-    usuario_id = datos["usuario_id"]
-    usuario = db.usuarios.find_one({"email": usuario_id})  # Supongo que usas el email para buscar usuarios
+    # Buscar al usuario por nombre
+    usuario_nombre = datos["usuario_id"]
+    logging.info(f"Buscando usuario con el nombre: {usuario_nombre}")
+    usuario = db.usuarios.find_one({"nombre": usuario_nombre})
 
     if not usuario:
-        logging.info("Usuario no encontrado")
+        logging.info(f"Usuario no encontrado: {usuario_nombre}")
         return jsonify({"error": "Usuario no encontrado"}), 404
 
     try:
-        # Obtener el ID de la película
         pelicula_id = pelicula["_id"]
-        usuario_id = usuario["_id"]  # Usar el ObjectId del usuario
-
+        usuario_id = usuario["_id"]
     except Exception as e:
         logging.error(f"Error al obtener el ID de la película o usuario: {e}")
         return jsonify({"error": "ID inválido"}), 400
@@ -105,6 +103,7 @@ def comprar_entradas():
         None
     )
     if not horario:
+        logging.info(f"Horario no encontrado o no coincide: {datos['hora']}")
         return jsonify({"error": "Horario no encontrado o no coincide"}), 404
 
     # Validar asientos disponibles
@@ -125,7 +124,7 @@ def comprar_entradas():
 
                 # Registrar la transacción
                 nueva_transaccion = {
-                    "usuario_id": str(usuario_id),  # Asegúrate de guardar el ObjectId en formato de string
+                    "usuario_id": str(usuario_id),
                     "pelicula_id": str(pelicula["_id"]),
                     "titulo_pelicula": pelicula["titulo"],
                     "horario": datos["hora"],
@@ -155,10 +154,12 @@ def comprar_entradas():
 def home():
     return "¡Bienvenido al sistema de gestión de cine!"
 
+
 # Ruta para favicon
 @app.route('/favicon.ico')
 def favicon():
     return '', 204  # Responde con un estado 204 No Content
+
 
 if __name__ == '__main__':
     app.run(debug=True)

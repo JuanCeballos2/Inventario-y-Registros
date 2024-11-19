@@ -5,10 +5,10 @@ function PurchaseForm() {
   const [movies, setMovies] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
-  const [availableTimes, setAvailableTimes] = useState([]);  // Estado para los horarios disponibles
+  const [selectedTime, setSelectedTime] = useState('');
   const [purchaseData, setPurchaseData] = useState({
     usuario_id: '',
-    pelicula_id: '',
+    pelicula_nombre: '',
     hora: '',
     cantidad_entradas: 1,
   });
@@ -16,52 +16,55 @@ function PurchaseForm() {
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
 
-  // Cargar usuarios y películas al cargar la aplicación
   useEffect(() => {
+    // Cargar usuarios
     fetch('http://localhost:5000/usuarios')
       .then((res) => res.json())
       .then((data) => setUsers(data))
       .catch((err) => console.error('Error loading users:', err));
 
+    // Cargar películas
     fetch('http://localhost:5000/peliculas')
       .then((res) => res.json())
-      .then((data) => {
-        setMovies(data);
-        console.log('Películas cargadas:', data);  // Verifica las películas y sus horarios
-      })
+      .then((data) => setMovies(data))
       .catch((err) => console.error('Error loading movies:', err));
-  }, []);
+
+     // Cargar películas
+     fetch('http://localhost:5000/transacciones')
+     .then((res) => res.json())
+     .then((data) => setMovies(data))
+     .catch((err) => console.error('Error loading transacciones:', err));
+ }, []);
+  
+  
 
   const handleUserChange = (e) => {
-    const userId = e.target.value;
-    setPurchaseData((prevData) => ({ ...prevData, usuario_id: userId }));
+    const userName = e.target.value; // El nombre del usuario
+    setPurchaseData((prevData) => ({ ...prevData, usuario_id: userName }));
+};
+
+
+  const handleMovieChange = (event) => {
+    const selectedTitle = event.target.value;
+    
+    const movie = movies.find((movie) => movie.titulo === selectedTitle);
+    if (movie) {
+      setSelectedMovie(movie); // Establece la película seleccionada
+      setPurchaseData((prevData) => ({
+        ...prevData,
+        pelicula_nombre: movie.titulo, // Asigna el nombre de la película seleccionada
+      }));
+    } else {
+      console.error("No se encontró la película con el título:", selectedTitle);
+    }
   };
 
-  const handleMovieChange = (e) => {
-    const movieId = e.target.value;
-    console.log('movieId seleccionado:', movieId);
-
-    // Buscar la película por su ID
-    const selected = movies.find((movie) => String(movie._id) === movieId);
-    console.log('Película encontrada:', selected);
-
-    if (!selected) {
-      console.error('No se encontró la película con el ID:', movieId);
-      return;
-    }
-
-    // Actualizar estado de la película seleccionada
-    setSelectedMovie(selected);  // Actualizar selectedMovie
-
-    // Asumiendo que los horarios están en la propiedad `horarios`
-    const horariosDisponibles = selected.horarios || [];
-    console.log('Horarios disponibles:', horariosDisponibles);
-
-    // Actualizar los horarios en el estado
-    setAvailableTimes(horariosDisponibles);  // setAvailableTimes es el setter para el estado de los horarios
-
-    // Actualizar otros datos, como el ID de la película
-    setPurchaseData((prevData) => ({ ...prevData, pelicula_id: movieId }));
+  const handleTimeChange = (event) => {
+    setSelectedTime(event.target.value);
+    setPurchaseData((prevData) => ({
+      ...prevData,
+      hora: event.target.value,
+    }));
   };
 
   const handleInputChange = (e) => {
@@ -78,25 +81,27 @@ function PurchaseForm() {
     setMessage(null);
     setError(null);
 
-    // Validación de campos obligatorios
-    const requiredFields = ['pelicula_id', 'hora', 'cantidad_entradas', 'usuario_id'];
+    const requiredFields = ['pelicula_nombre', 'hora', 'cantidad_entradas', 'usuario_id'];
     if (!requiredFields.every((field) => purchaseData[field])) {
-      setError('Faltan datos obligatorios: pelicula_id, hora, cantidad_entradas, usuario_id');
+      setError('Faltan datos obligatorios: pelicula_nombre, hora, cantidad_entradas, usuario_id');
       setIsLoading(false);
       return;
     }
 
     try {
-      // Enviar la data al backend
-      const response = await fetch('http://localhost:5000/compras', {
+      // Convertir la hora al formato adecuado para el backend (%d/%m/%Y %H:%M)
+      const date = new Date(purchaseData.hora);
+      const formattedHour = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+
+      // Actualizamos la hora con el formato adecuado
+      const updatedData = { ...purchaseData, hora: formattedHour };
+
+      console.log("Datos de la compra antes de enviar:", updatedData);  // Log para verificar
+
+      const response = await fetch('http://localhost:5000/transacciones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          usuario_id: purchaseData.usuario_id,  // Debe ser el ObjectId
-          pelicula_id: purchaseData.pelicula_id,  // Debe ser el ObjectId
-          hora: purchaseData.hora,
-          cantidad_entradas: purchaseData.cantidad_entradas,
-        }),
+        body: JSON.stringify(updatedData),
       });
 
       const data = await response.json();
@@ -121,7 +126,6 @@ function PurchaseForm() {
       {error && <Alert variant="danger">{error}</Alert>}
 
       <Form onSubmit={handleSubmit}>
-        {/* Selección de usuario */}
         <Form.Group controlId="formUsuario">
           <Form.Label>Usuario</Form.Label>
           <Form.Control as="select" onChange={handleUserChange} required>
@@ -134,47 +138,37 @@ function PurchaseForm() {
           </Form.Control>
         </Form.Group>
 
-        {/* Selección de película */}
         <Form.Group controlId="formPelicula">
           <Form.Label>Película</Form.Label>
           <Form.Control as="select" onChange={handleMovieChange} required>
             <option value="">Selecciona una película</option>
             {movies.map((movie) => (
-              <option key={movie._id} value={movie._id}>
+              <option key={movie._id} value={movie.titulo}>
                 {movie.titulo}
               </option>
             ))}
           </Form.Control>
         </Form.Group>
 
-        {/* Verifica si se ha seleccionado una película */}
-        {selectedMovie ? (
-          availableTimes.length > 0 ? (
-            <Form.Group controlId="formHora">
-              <Form.Label>Horario</Form.Label>
-              <Form.Control
-                as="select"
-                name="hora"
-                value={purchaseData.hora}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Selecciona un horario</option>
-                {availableTimes.map((horario, index) => (
-                  <option key={index} value={horario}>
-                    {new Date(horario).toLocaleString()}  {/* Mostrar el horario en formato local */}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
-          ) : (
-            <p>No hay horarios disponibles para esta película.</p>
-          )
-        ) : (
-          <p>Selecciona una película para ver los horarios.</p>
+        {selectedMovie && (
+          <Form.Group controlId="formHora">
+            <Form.Label>Horario</Form.Label>
+            <Form.Control
+              as="select"
+              value={purchaseData.hora}
+              onChange={handleTimeChange}
+              required
+            >
+              <option value="">Selecciona un horario</option>
+              {selectedMovie.horarios.map((horario, index) => (
+                <option key={index} value={horario.hora}>
+                  {new Date(horario.hora).toLocaleString()} - {horario.precio_entrada}€
+                </option>
+              ))}
+            </Form.Control>
+          </Form.Group>
         )}
 
-        {/* Entrada para cantidad de boletos */}
         <Form.Group controlId="formCantidadEntradas">
           <Form.Label>Cantidad de Entradas</Form.Label>
           <Form.Control
@@ -187,15 +181,8 @@ function PurchaseForm() {
           />
         </Form.Group>
 
-        {/* Botón de compra */}
         <Button variant="primary" type="submit" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <Spinner animation="border" size="sm" /> Procesando...
-            </>
-          ) : (
-            'Comprar'
-          )}
+          {isLoading ? <Spinner animation="border" size="sm" /> : 'Comprar'}
         </Button>
       </Form>
     </div>
