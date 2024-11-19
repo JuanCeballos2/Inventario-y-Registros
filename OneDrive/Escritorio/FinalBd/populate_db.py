@@ -74,3 +74,57 @@ db.peliculas.insert_many([
         ]
     }
 ])
+
+def registrar_transaccion(usuario_nombre, pelicula_titulo, horario, cantidad_entradas):
+    # Buscar al usuario por nombre
+    usuario = db.usuarios.find_one({"nombre": usuario_nombre})
+    if not usuario:
+        print("Usuario no encontrado")
+        return
+    
+    # Buscar la película
+    pelicula = db.peliculas.find_one({"titulo": pelicula_titulo})
+    if not pelicula:
+        print("Película no encontrada")
+        return
+    
+    # Buscar el horario de la película
+    horario_data = None
+    for h in pelicula["horarios"]:
+        if h["hora"] == horario:
+            horario_data = h
+            break
+    
+    if not horario_data:
+        print("Horario no encontrado")
+        return
+    
+    # Verificar si hay asientos disponibles
+    if horario_data["asientos_disponibles"] < cantidad_entradas:
+        print("No hay suficientes asientos disponibles")
+        return
+    
+    # Calcular el total pagado
+    total_pagado = cantidad_entradas * horario_data["precio_entrada"]
+    
+    # Crear la transacción
+    transaccion = {
+        "usuario_id": usuario["_id"],
+        "pelicula_titulo": pelicula["titulo"],
+        "horario": horario_data["hora"],
+        "cantidad_entradas": cantidad_entradas,
+        "total_pagado": total_pagado,
+        "fecha_transaccion": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    }
+
+    # Insertar la transacción en la base de datos
+    db.transacciones.insert_one(transaccion)
+
+    # Actualizar la cantidad de asientos disponibles
+    db.peliculas.update_one(
+        {"titulo": pelicula["titulo"], "horarios.hora": horario},
+        {"$inc": {"horarios.$.asientos_disponibles": -cantidad_entradas}}
+    )
+    
+    print(f"Transacción registrada con éxito: {transaccion}")
+

@@ -66,7 +66,7 @@ function MovieList({ movies, setMovies, setSelectedMovie }) {
                   <strong>Duración:</strong> {movie.duracion} min
                 </Card.Text>
                 {/* Redirige a la página de compra con el id de la película */}
-                <Link to={`/compra/${movie._id}`}>
+                <Link to={`/transacciones/${movie._id}`}>
                   <Button variant="primary">
                     Ver Horarios y Comprar
                   </Button>

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert, Spinner } from 'react-bootstrap';
+import { useParams, useNavigate } from 'react-router-dom'; // Usamos useNavigate para redirigir
 
 function PurchaseForm() {
+  const { id } = useParams(); // Obtiene el id de la URL
+  const navigate = useNavigate(); // Usamos useNavigate para redirigir
   const [movies, setMovies] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
-  const [selectedTime, setSelectedTime] = useState('');
   const [purchaseData, setPurchaseData] = useState({
-    usuario_id: '',
+    usuario_nombre: '',
     pelicula_nombre: '',
     hora: '',
     cantidad_entradas: 1,
@@ -29,38 +31,32 @@ function PurchaseForm() {
       .then((data) => setMovies(data))
       .catch((err) => console.error('Error loading movies:', err));
 
-     // Cargar películas
-     fetch('http://localhost:5000/transacciones')
-     .then((res) => res.json())
-     .then((data) => setMovies(data))
-     .catch((err) => console.error('Error loading transacciones:', err));
- }, []);
-  
-  
+    if (id) {
+      console.log('ID obtenido de la URL:', id);  // Log para verificar el id
+    }
+  }, [id]);
 
   const handleUserChange = (e) => {
-    const userName = e.target.value; // El nombre del usuario
-    setPurchaseData((prevData) => ({ ...prevData, usuario_id: userName }));
-};
-
+    const userName = e.target.value;
+    setPurchaseData((prevData) => ({ ...prevData, usuario_nombre: userName }));
+  };
 
   const handleMovieChange = (event) => {
     const selectedTitle = event.target.value;
-    
+
     const movie = movies.find((movie) => movie.titulo === selectedTitle);
     if (movie) {
-      setSelectedMovie(movie); // Establece la película seleccionada
+      setSelectedMovie(movie);
       setPurchaseData((prevData) => ({
         ...prevData,
-        pelicula_nombre: movie.titulo, // Asigna el nombre de la película seleccionada
+        pelicula_nombre: movie.titulo,
       }));
     } else {
-      console.error("No se encontró la película con el título:", selectedTitle);
+      console.error('No se encontró la película con el título:', selectedTitle);
     }
   };
 
   const handleTimeChange = (event) => {
-    setSelectedTime(event.target.value);
     setPurchaseData((prevData) => ({
       ...prevData,
       hora: event.target.value,
@@ -81,23 +77,33 @@ function PurchaseForm() {
     setMessage(null);
     setError(null);
 
-    const requiredFields = ['pelicula_nombre', 'hora', 'cantidad_entradas', 'usuario_id'];
+    const requiredFields = ['pelicula_nombre', 'hora', 'cantidad_entradas', 'usuario_nombre'];
     if (!requiredFields.every((field) => purchaseData[field])) {
-      setError('Faltan datos obligatorios: pelicula_nombre, hora, cantidad_entradas, usuario_id');
+      setError('Faltan datos obligatorios: pelicula_nombre, hora, cantidad_entradas, usuario_nombre');
       setIsLoading(false);
       return;
     }
 
     try {
-      // Convertir la hora al formato adecuado para el backend (%d/%m/%Y %H:%M)
-      const date = new Date(purchaseData.hora);
-      const formattedHour = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+      // Verificar que el id esté definido antes de realizar el envío
+      if (!id) {
+        setError('ID no encontrado en la URL');
+        return;
+      }
 
-      // Actualizamos la hora con el formato adecuado
+      const date = new Date(purchaseData.hora);
+      const formattedHour = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1)
+        .toString()
+        .padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date
+        .getMinutes()
+        .toString()
+        .padStart(2, '0')}`;
+
       const updatedData = { ...purchaseData, hora: formattedHour };
 
-      console.log("Datos de la compra antes de enviar:", updatedData);  // Log para verificar
+      console.log('Datos de la compra antes de enviar:', updatedData);
 
+      // Ahora realizamos el POST con el formato correcto
       const response = await fetch('http://localhost:5000/transacciones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -108,6 +114,8 @@ function PurchaseForm() {
 
       if (response.ok) {
         setMessage(data.message);
+        // Redirigir a la página de detalles de la transacción
+        navigate(`/transacciones/${data.id}`);
       } else {
         setError(data.error || 'Ocurrió un error al procesar la compra.');
       }
@@ -131,7 +139,7 @@ function PurchaseForm() {
           <Form.Control as="select" onChange={handleUserChange} required>
             <option value="">Selecciona un usuario</option>
             {users.map((user) => (
-              <option key={user._id} value={user._id}>
+              <option key={user._id} value={user.nombre}>
                 {user.nombre}
               </option>
             ))}
@@ -160,8 +168,8 @@ function PurchaseForm() {
               required
             >
               <option value="">Selecciona un horario</option>
-              {selectedMovie.horarios.map((horario, index) => (
-                <option key={index} value={horario.hora}>
+              {selectedMovie.horarios.map((horario) => (
+                <option key={horario.hora} value={horario.hora}>
                   {new Date(horario.hora).toLocaleString()} - {horario.precio_entrada}€
                 </option>
               ))}

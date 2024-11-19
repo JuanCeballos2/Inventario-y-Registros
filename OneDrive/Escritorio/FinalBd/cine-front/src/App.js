@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';  // Cambié Switch por Routes
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import MovieList from './components/MovieList';
 import UserForm from './components/UserForm';
-import MovieDetail from './components/MovieDetail'; // Asegúrate de tener este componente si lo usas
+import MovieDetail from './components/MovieDetail';
 import PurchaseForm from './components/PurchaseForm';
 import { Container } from 'react-bootstrap';
 
@@ -22,7 +22,7 @@ function App() {
 
   return (
     <Router>
-      <Navbar />
+      <Navbar user={user} selectedMovie={selectedMovie} setUser={setUser} />
       <Container className="my-4">
         <Routes>
           {/* Ruta principal */}
@@ -48,8 +48,8 @@ function App() {
 
           {/* Ruta para el formulario de compra */}
           <Route 
-            path="/compra/:id" 
-            element={<PurchaseForm movie={selectedMovie} user={user} />} // Asegúrate de pasar los props correctos
+            path="/transacciones/:id" 
+            element={<PurchaseForm movies={movies} user={user} />} // Pasamos las peliculas y el usuario a PurchaseForm
           />
         </Routes>
       </Container>
