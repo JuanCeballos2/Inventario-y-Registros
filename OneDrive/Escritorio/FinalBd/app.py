@@ -121,6 +121,19 @@ def comprar_entradas():
         {"titulo": pelicula["titulo"], "horarios.hora": datos["hora"].strip()},
         {"$inc": {"horarios.$.asientos_disponibles": -int(datos["cantidad_entradas"])}}
     )
+    # Agregar la compra al historial de compras del usuario
+    compra_detalle = {
+        "pelicula": pelicula["titulo"],
+        "hora": datos["hora"],
+        "cantidad_entradas": int(datos["cantidad_entradas"]),
+        "total_pagado": int(datos["cantidad_entradas"]) * horario["precio_entrada"],
+        "fecha_transaccion": nueva_transaccion["fecha_transaccion"]
+    }
+
+    db.usuarios.update_one(
+        {"_id": usuario["_id"]},
+        {"$push": {"historial_compras": compra_detalle}}  # Se agrega la compra al historial
+    )
 
     logging.info("Compra realizada con éxito")
     return jsonify({

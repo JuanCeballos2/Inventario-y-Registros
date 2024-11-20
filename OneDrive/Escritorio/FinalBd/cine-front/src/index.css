@@ -1,13 +1,128 @@
+/* Estilo global del body */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', 
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #ecf0f1; /* Color de fondo claro */
+  color: #2c3e50; /* Texto oscuro para buena legibilidad */
+  line-height: 1.6; /* Espaciado de líneas para facilitar la lectura */
+  padding: 0;
+  box-sizing: border-box;
 }
 
+/* Estilo de los elementos de código */
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  background-color: #f4f7fb; /* Fondo claro para los bloques de código */
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 1em;
+  color: #d6336c; /* Color distintivo para el texto del código */
+}
+
+/* Agregar un estilo general para los encabezados */
+h1, h2, h3, h4, h5, h6 {
+  color: #34495e; /* Colores suaves para los encabezados */
+  font-weight: bold;
+  margin-bottom: 1em;
+}
+
+/* Botones de acción */
+button {
+  background-color: #3498db; /* Azul brillante */
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+button:hover {
+  background-color: #2980b9; /* Color más oscuro al pasar el mouse */
+  transform: scale(1.05);
+}
+
+button:active {
+  background-color: #1f6a8c;
+}
+
+/* Estilo para enlaces */
+a {
+  color: #3498db; /* Color azul brillante */
+  text-decoration: none;
+  font-weight: bold;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: #2980b9; /* Azul más oscuro al pasar el mouse */
+}
+
+/* Estilo de las alertas */
+.alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.alert-danger {
+  background-color: #e74c3c; /* Rojo para errores */
+  color: white;
+}
+
+.alert-success {
+  background-color: #2ecc71; /* Verde para éxito */
+  color: white;
+}
+
+/* Contenedor de la app */
+.App {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Mejoras en el logo */
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+  transition: transform 0.3s ease-in-out;
+}
+
+.App-logo:hover {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
+/* Estilos personalizados para el botón de eliminar preferencia */
+.remove-preference-btn {
+  background-color: #e74c3c; /* Rojo brillante */
+  color: white;
+  font-size: 5px; /* Tamaño de fuente */
+  padding: 8px 16px; /* Relleno interior para controlar el tamaño */
+  width: 90px; /* Tamaño fijo para el botón */
+  height: 40px; /* Ajuste de altura del botón */
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center; /* Asegura que el texto esté centrado */
+  display: inline-flex; /* Usamos inline-flex para un control más preciso */
+  justify-content: center; /* Centra el contenido horizontalmente */
+  align-items: center; /* Centra el contenido verticalmente */
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+.center-button {
+  display: flex;
+  justify-content: center;  /* Centra el contenido horizontalmente */
+  align-items: center;      /* Centra el contenido verticalmente si es necesario */
+  height: 100%;             /* Ajusta el contenedor al 100% de la altura disponible */
 }

@@ -6,6 +6,8 @@ import UserForm from './components/UserForm';
 import MovieDetail from './components/MovieDetail';
 import PurchaseForm from './components/PurchaseForm';
 import { Container } from 'react-bootstrap';
+import './App.css';  // Asumiendo que el archivo App.css está en el mismo directorio que App.js
+import './index.css';
 
 function App() {
   const [movies, setMovies] = useState([]); // State para la lista de películas

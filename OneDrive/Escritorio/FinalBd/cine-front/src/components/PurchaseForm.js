@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom'; // Usamos useNavigate para redirigir
+import '../App.css';  // Subir un nivel desde "components" a la carpeta "src"
+import '../index.css';
 
 function PurchaseForm() {
   const { id } = useParams(); // Obtiene el id de la URL

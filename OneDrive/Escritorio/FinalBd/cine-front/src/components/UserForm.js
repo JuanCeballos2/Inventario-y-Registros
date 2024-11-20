@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
 import { Form, Button, Alert, Spinner } from 'react-bootstrap';
+import '../App.css';  // Subir un nivel desde "components" a la carpeta "src"
+import '../index.css';
+
+
+
 
 function UserForm({ setUser }) {
   const [userData, setUserData] = useState({
@@ -107,7 +112,7 @@ function UserForm({ setUser }) {
         </Form.Group>
 
         <Form.Group controlId="formPreferencias">
-          <Form.Label>Preferencias</Form.Label>
+        <Form.Label>Preferencias</Form.Label>
           <div>
             <Form.Control
               type="text"
@@ -118,17 +123,35 @@ function UserForm({ setUser }) {
             <Button variant="secondary" onClick={handleAddPreference} disabled={!newPreference}>
               Agregar
             </Button>
-            <ul>
+            
+            {/* Agregamos un salto de línea entre los botones */}
+            <div style={{ marginBottom: '15px' }}></div>
+
+            <ul style={{ listStyleType: 'none', paddingLeft: '0' }}>
               {userData.preferencias.map((pref, index) => (
-                <li key={index}>
-                  {pref} <Button variant="danger" onClick={() => handleRemovePreference(index)}>Eliminar</Button>
+                <li key={index} style={{ marginBottom: '10px' }}>
+                  {pref} 
+                  <Button
+                    className="remove-preference-btn"
+                    variant="danger"
+                    onClick={() => handleRemovePreference(index)}
+                    style={{ marginLeft: '10px' }}
+                  >
+                    Eliminar
+                  </Button>
                 </li>
               ))}
             </ul>
           </div>
         </Form.Group>
 
-        <Button variant="primary" type="submit" disabled={isSubmitting}>
+
+                <Button
+          className="center-button"
+          variant="primary"
+          type="submit"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? (
             <>
               <Spinner animation="border" size="sm" /> Registrando...
@@ -137,6 +160,8 @@ function UserForm({ setUser }) {
             'Registrarse'
           )}
         </Button>
+
+
       </Form>
     </div>
   );
