@@ -9,23 +9,33 @@ function UserForm({ setUser }) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [newPreference, setNewPreference] = useState('');
 
-  // Maneja los cambios en el formulario
+  // Maneja los cambios en los campos de texto
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    setUserData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
-    // Si es el campo de 'preferencias', convertir la cadena en un array
-    if (name === 'preferencias') {
+  const handleAddPreference = () => {
+    if (newPreference.trim() && !userData.preferencias.includes(newPreference.trim())) {
       setUserData((prevData) => ({
         ...prevData,
-        [name]: value.split(',').map(item => item.trim()).filter(item => item), // Filtra cualquier valor vacío
+        preferencias: [...prevData.preferencias, newPreference.trim()],
       }));
-    } else {
-      setUserData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
+      setNewPreference(''); // Limpiar el campo de texto
     }
+  };
+
+  const handleRemovePreference = (index) => {
+    const updatedPreferences = userData.preferencias.filter((_, i) => i !== index);
+    setUserData((prevData) => ({
+      ...prevData,
+      preferencias: updatedPreferences,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -98,14 +108,24 @@ function UserForm({ setUser }) {
 
         <Form.Group controlId="formPreferencias">
           <Form.Label>Preferencias</Form.Label>
-          <Form.Control
-            type="text"
-            name="preferencias"
-            value={userData.preferencias.join(', ')}  
-            onChange={handleInputChange}
-            placeholder="Acción, Comedia, Drama..."
-            required
-          />
+          <div>
+            <Form.Control
+              type="text"
+              value={newPreference}
+              onChange={(e) => setNewPreference(e.target.value)}
+              placeholder="Agregar preferencia"
+            />
+            <Button variant="secondary" onClick={handleAddPreference} disabled={!newPreference}>
+              Agregar
+            </Button>
+            <ul>
+              {userData.preferencias.map((pref, index) => (
+                <li key={index}>
+                  {pref} <Button variant="danger" onClick={() => handleRemovePreference(index)}>Eliminar</Button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </Form.Group>
 
         <Button variant="primary" type="submit" disabled={isSubmitting}>

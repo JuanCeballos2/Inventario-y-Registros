@@ -57,11 +57,15 @@ function PurchaseForm() {
   };
 
   const handleTimeChange = (event) => {
+    const selectedTime = event.target.value;  // Solo obtenemos la hora seleccionada
     setPurchaseData((prevData) => ({
       ...prevData,
-      hora: event.target.value,
+      hora: selectedTime,  // Solo almacenamos la hora seleccionada, no la fecha
     }));
+  
+    console.log('Hora seleccionada:', selectedTime);  // Log para verificar
   };
+  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -76,45 +80,31 @@ function PurchaseForm() {
     setIsLoading(true);
     setMessage(null);
     setError(null);
-
+  
     const requiredFields = ['pelicula_nombre', 'hora', 'cantidad_entradas', 'usuario_nombre'];
     if (!requiredFields.every((field) => purchaseData[field])) {
       setError('Faltan datos obligatorios: pelicula_nombre, hora, cantidad_entradas, usuario_nombre');
       setIsLoading(false);
       return;
     }
-
+  
     try {
-      // Verificar que el id esté definido antes de realizar el envío
-      if (!id) {
-        setError('ID no encontrado en la URL');
-        return;
-      }
-
-      const date = new Date(purchaseData.hora);
-      const formattedHour = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1)
-        .toString()
-        .padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date
-        .getMinutes()
-        .toString()
-        .padStart(2, '0')}`;
-
-      const updatedData = { ...purchaseData, hora: formattedHour };
-
-      console.log('Datos de la compra antes de enviar:', updatedData);
-
-      // Ahora realizamos el POST con el formato correcto
+      // Verifica que la hora esté en el formato correcto (ya está combinada correctamente)
+      const updatedData = { ...purchaseData };  // Ya tenemos la hora correctamente formateada
+  
+      console.log('Datos de la compra antes de enviar:', updatedData);  // Verifica el formato correcto de la hora
+  
+      // Enviar los datos al backend
       const response = await fetch('http://localhost:5000/transacciones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedData),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
         setMessage(data.message);
-        // Redirigir a la página de detalles de la transacción
         navigate(`/transacciones/${data.id}`);
       } else {
         setError(data.error || 'Ocurrió un error al procesar la compra.');
@@ -158,24 +148,25 @@ function PurchaseForm() {
           </Form.Control>
         </Form.Group>
 
-        {selectedMovie && (
-          <Form.Group controlId="formHora">
-            <Form.Label>Horario</Form.Label>
-            <Form.Control
-              as="select"
-              value={purchaseData.hora}
-              onChange={handleTimeChange}
-              required
-            >
-              <option value="">Selecciona un horario</option>
-              {selectedMovie.horarios.map((horario) => (
-                <option key={horario.hora} value={horario.hora}>
-                  {new Date(horario.hora).toLocaleString()} - {horario.precio_entrada}€
-                </option>
-              ))}
-            </Form.Control>
-          </Form.Group>
+        {selectedMovie && selectedMovie.horarios && (
+        <Form.Group controlId="formHora">
+          <Form.Label>Horario</Form.Label>
+          <Form.Control
+            as="select"
+            value={purchaseData.hora}
+            onChange={handleTimeChange}
+            required
+          >
+            <option value="">Selecciona un horario</option>
+            {selectedMovie.horarios.map((horario, index) => (
+              <option key={index} value={horario.hora}>
+                {horario.hora} - {horario.precio_entrada}€
+              </option>
+            ))}
+          </Form.Control>
+        </Form.Group>
         )}
+
 
         <Form.Group controlId="formCantidadEntradas">
           <Form.Label>Cantidad de Entradas</Form.Label>
