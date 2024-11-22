@@ -31,6 +31,13 @@ function Navbar({ user, selectedMovie, setUser }) {
             </Nav.Link>
           )}
 
+          {/* Enlace para acceder al historial de compras si el usuario está autenticado */}
+          {user && (
+            <Nav.Link as={Link} to={`/usuarios/${user.nombre}/historial`} style={{ color: 'white', textDecoration: 'none' }}>
+              Historial de Compras
+            </Nav.Link>
+          )}
+
           {/* Si el usuario está autenticado, mostrar opciones de usuario */}
           {user ? (
             <Nav.Link 

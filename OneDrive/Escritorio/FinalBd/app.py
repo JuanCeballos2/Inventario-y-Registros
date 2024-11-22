@@ -63,6 +63,18 @@ def registrar_pelicula():
     result = db.peliculas.insert_one(nueva_pelicula)
     return jsonify({"id": str(result.inserted_id), "message": "Película registrada con éxito"}), 201
 
+# Ruta para obtener el historial de compras de un usuario
+@app.route('/usuarios/<nombre_usuario>/historial', methods=['GET'])
+def obtener_historial_compras(nombre_usuario):
+    # Buscar al usuario por su nombre
+    usuario = db.usuarios.find_one({"nombre": nombre_usuario})
+    if not usuario:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+
+    # Retornar el historial de compras
+    return jsonify({"historial_compras": usuario.get("historial_compras", [])})
+
+
 # Ruta para realizar la compra de entradas
 @app.route('/transacciones', methods=['POST'])
 def comprar_entradas():
@@ -108,7 +120,9 @@ def comprar_entradas():
     # Registrar la transacción
     nueva_transaccion = {
         "usuario_id": str(usuario["_id"]),
+        "usuario_nombre": usuario["nombre"],
         "pelicula_id": pelicula["titulo"],
+        "pelicula_nombre": pelicula["titulo"],
         "horario": datos["hora"],
         "cantidad_entradas": int(datos["cantidad_entradas"]),
         "total_pagado": int(datos["cantidad_entradas"]) * horario["precio_entrada"],
@@ -123,7 +137,7 @@ def comprar_entradas():
     )
     # Agregar la compra al historial de compras del usuario
     compra_detalle = {
-        "pelicula": pelicula["titulo"],
+        "pelicula_nombre": pelicula["titulo"],
         "hora": datos["hora"],
         "cantidad_entradas": int(datos["cantidad_entradas"]),
         "total_pagado": int(datos["cantidad_entradas"]) * horario["precio_entrada"],
@@ -134,6 +148,8 @@ def comprar_entradas():
         {"_id": usuario["_id"]},
         {"$push": {"historial_compras": compra_detalle}}  # Se agrega la compra al historial
     )
+
+    
 
     logging.info("Compra realizada con éxito")
     return jsonify({

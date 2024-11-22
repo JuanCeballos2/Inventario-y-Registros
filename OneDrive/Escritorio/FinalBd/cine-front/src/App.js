@@ -5,6 +5,7 @@ import MovieList from './components/MovieList';
 import UserForm from './components/UserForm';
 import MovieDetail from './components/MovieDetail';
 import PurchaseForm from './components/PurchaseForm';
+import UserHistory from './components/UserHistory'; // Importar el componente para mostrar el historial
 import { Container } from 'react-bootstrap';
 import './App.css';  // Asumiendo que el archivo App.css está en el mismo directorio que App.js
 import './index.css';
@@ -53,6 +54,9 @@ function App() {
             path="/transacciones/:id" 
             element={<PurchaseForm movies={movies} user={user} />} // Pasamos las peliculas y el usuario a PurchaseForm
           />
+
+          {/* Ruta para mostrar el historial de compras del usuario */}
+          <Route path="/usuarios/:userName/historial" element={<UserHistory />} />
         </Routes>
       </Container>
     </Router>

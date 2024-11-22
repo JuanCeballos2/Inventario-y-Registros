@@ -72,6 +72,15 @@ db.peliculas.insert_many([
             {"hora": convertir_fecha("2024/11/22 12:00"), "asientos_disponibles": 180, "precio_entrada": 11.0},
             {"hora": convertir_fecha("2024/11/22 18:00"), "asientos_disponibles": 85, "precio_entrada": 13.0}
         ]
+    },
+    {
+        "titulo": "Lilo y Stich",
+        "genero": "Animado",
+        "duracion": 150,
+        "horarios": [
+            {"hora": convertir_fecha("2024/12/25 17:00"), "asientos_disponibles": 150, "precio_entrada": 12.0},
+            {"hora": convertir_fecha("2024/11/22 18:00"), "asientos_disponibles": 50, "precio_entrada": 20.0}
+        ]
     }
 ])
 
